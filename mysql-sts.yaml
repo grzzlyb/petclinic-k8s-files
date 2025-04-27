@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql-sts
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: mysql-uat 
+  template:
+    metadata:
+      labels:
+        name: mysql-uat
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+        - name: mysql
+          image: mysql:9.1
+          ports:
+            - name: tcp
+              protocol: TCP
+              containerPort: 3306
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/mysql
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: petclinic-secrets
+                  key: MYSQL_ROOT_PASSWORD
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: mysql-pvc
